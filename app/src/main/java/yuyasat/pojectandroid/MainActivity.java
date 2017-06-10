@@ -2,6 +2,7 @@ package yuyasat.pojectandroid;
 
 import android.graphics.Color;
 import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -9,6 +10,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import java.util.Random;
 
 /**
  * Created by yuyataki on 2017/05/28.
@@ -22,7 +25,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int topRow = 3;
     private final int topNextColumn = 2;
     private final int topNextRow = 2;
+    private final int none = Color.WHITE;
+    private final int red = Color.RED;
+    private final int blue = Color.BLUE;
+    private final int green = Color.GREEN;
+    private final int yellow = Color.YELLOW;
+    private final int[] colors = {red, blue, green, yellow};
+
+
     private LinearLayout topGrid[][];
+    private int firstRow = 0;
+    private int firstColumn = 2;
+    private int secondRow = 1;
+    private int secondColumn = 2;
+
     private LinearLayout topNextGrid[][];
     private LinearLayout grid[][];
     private int gridWidth = 70;
@@ -45,13 +61,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // fieldLayout.setOrientation(LinearLayout.VERTICAL);
         // fieldLayout.setLayoutParams(fieldLayoutParams);
 
-        topGrid = initializeState(topGrid, column, topRow);
-        Log.d("test",topGrid[0][1].toString());
-        renderField(topFieldLayout, topGrid, column, topRow);
-        topNextGrid = initializeState(topNextGrid, topNextColumn, topNextRow);
-        renderField(topNextFieldLayout, topNextGrid, topNextColumn, topNextRow);
+        topGrid = initializeTopState(topGrid, column, topRow);
+        renderField(topFieldLayout, topGrid);
+        topNextGrid = initializeTopNextState(topNextGrid, topNextColumn, topNextRow);
+        renderField(topNextFieldLayout, topNextGrid);
         grid = initializeState(grid, column, row);
-        grid = renderField(fieldLayout, grid, column, row);
+        renderField(fieldLayout, grid);
 
         Button ivt1Button = (Button) findViewById(R.id.button_left);
         ivt1Button.setOnClickListener(this);
@@ -66,28 +81,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_left:
-                this.topGrid[0][1].setBackgroundColor(Color.RED);
-                break;
-            case R.id.button_right:
-                if (mark.x > 0) {
-                    grid[mark.x][mark.y].setBackgroundColor(Color.LTGRAY);
-                    grid[mark.x - 1][mark.y].setBackgroundColor(Color.RED);
-                    mark.x -= 1;
-                } else {
+//                Log.d("testq111111",String.valueOf(isValidMove("left")));
+                if ( isValidMove("left")) {
+                    ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstColumn][firstRow].getBackground();
+                    topGrid[firstColumn - 1][firstRow].setBackgroundColor(firstGridColor.getColor());
+                    topGrid[firstColumn][firstRow].setBackgroundColor(none);
+
+                    ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondColumn][secondRow].getBackground();
+                    topGrid[secondColumn - 1][secondRow].setBackgroundColor(secondGridColor.getColor());
+                    topGrid[secondColumn][secondRow].setBackgroundColor(none);
+
+                    firstColumn -= 1;
+                    secondColumn -= 1;
                 }
                 break;
-            case R.id.button_down:
+            case R.id.button_right:
+                if ( isValidMove("right")) {
+                    ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstColumn][firstRow].getBackground();
+                    topGrid[firstColumn + 1][firstRow].setBackgroundColor(firstGridColor.getColor());
+                    topGrid[firstColumn][firstRow].setBackgroundColor(none);
+
+                    ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondColumn][secondRow].getBackground();
+                    topGrid[secondColumn + 1][secondRow].setBackgroundColor(secondGridColor.getColor());
+                    topGrid[secondColumn][secondRow].setBackgroundColor(none);
+
+                    firstColumn += 1;
+                    secondColumn += 1;
+                }
                 break;
             case R.id.button_X:
                 break;
             case R.id.button_Z:
+                break;
+            case R.id.button_down:
                 break;
             default:
                 break;
         }
     }
 
-    private LinearLayout[][] renderField(LinearLayout layout, LinearLayout[][] targetGrid, int column, int row) {
+    private void renderField(LinearLayout layout, LinearLayout[][] targetGrid) {
         for (int i = 0; i < targetGrid[0].length; i++) {
             LinearLayout rowLayout = new LinearLayout(this);
             rowLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -97,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
             layout.addView(rowLayout);
         }
-        return targetGrid;
     }
 
     private LinearLayout[][] initializeState(LinearLayout[][] targetGrid, int column, int row) {
@@ -116,4 +148,53 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return targetGrid;
     }
 
+    private LinearLayout[][] initializeTopNextState(LinearLayout[][] targetGrid, int column, int row) {
+        targetGrid = initializeState(targetGrid, column, row);
+        Random rnd = new Random();
+        targetGrid[0][0].setBackgroundColor(colors[rnd.nextInt(4)]);
+        targetGrid[0][1].setBackgroundColor(colors[rnd.nextInt(4)]);
+        targetGrid[1][0].setBackgroundColor(colors[rnd.nextInt(4)]);
+        targetGrid[1][1].setBackgroundColor(colors[rnd.nextInt(4)]);
+
+        return targetGrid;
+    }
+
+    private LinearLayout[][] initializeTopState(LinearLayout[][] targetGrid, int column, int row) {
+        targetGrid = initializeState(targetGrid, column, row);
+        Random rnd = new Random();
+        targetGrid[2][0].setBackgroundColor(colors[rnd.nextInt(4)]);
+        targetGrid[2][1].setBackgroundColor(colors[rnd.nextInt(4)]);
+
+        return targetGrid;
+    }
+
+    private boolean isValidMove (String move) {
+        Log.d("test",move);
+        switch (move) {
+            case "left":
+                if (firstColumn == 0) { return false; }
+                if (firstColumn == 1 && secondColumn == 0) { return false; }
+                return true;
+            case "right":
+                if (firstColumn == column - 1) { return false; }
+                if (firstColumn == column - 2 && secondColumn == column - 1) {
+                    return false;
+                }
+                return true;
+        }
+        return false;
+    }
+
+    private boolean isValidRotation (String rotation) {
+        Log.d("test", rotation);
+        if (rotation == "left") {
+            if (firstColumn == 0 && secondRow == 0) { return false; }
+            if (firstColumn == column - 1 && secondRow == 2) { return false; }
+        }
+        if (rotation == "right") {
+            if (firstColumn == 0 && secondRow == 2) { return false; }
+            if (firstColumn == column - 1 && secondRow == 0) { return false; }
+        }
+        return true;
+    }
 }
