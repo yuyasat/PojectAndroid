@@ -45,8 +45,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // fieldLayout.setOrientation(LinearLayout.VERTICAL);
         // fieldLayout.setLayoutParams(fieldLayoutParams);
 
+        topGrid = initializeState(topGrid, column, topRow);
+        Log.d("test",topGrid[0][1].toString());
         renderField(topFieldLayout, topGrid, column, topRow);
+        topNextGrid = initializeState(topNextGrid, topNextColumn, topNextRow);
         renderField(topNextFieldLayout, topNextGrid, topNextColumn, topNextRow);
+        grid = initializeState(grid, column, row);
         grid = renderField(fieldLayout, grid, column, row);
 
         Button ivt1Button = (Button) findViewById(R.id.button_left);
@@ -84,6 +88,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private LinearLayout[][] renderField(LinearLayout layout, LinearLayout[][] targetGrid, int column, int row) {
+        for (int i = 0; i < targetGrid[0].length; i++) {
+            LinearLayout rowLayout = new LinearLayout(this);
+            rowLayout.setOrientation(LinearLayout.HORIZONTAL);
+            rowLayout.setLayoutParams(rowLayoutParams);
+            for (int j = 0; j < targetGrid.length; j++) {
+                rowLayout.addView(targetGrid[j][i]);
+            }
+            layout.addView(rowLayout);
+        }
+        return targetGrid;
+    }
+
+    private LinearLayout[][] initializeState(LinearLayout[][] targetGrid, int column, int row) {
         targetGrid = new LinearLayout[column][row];
         for (int i = 0; i < row; i++) {
             LinearLayout rowLayout = new LinearLayout(this);
@@ -94,9 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 targetGrid[j][i].setLayoutParams(gridLayoutParams);
                 targetGrid[j][i].setBackgroundColor(Color.WHITE);
                 gridLayoutParams.setMargins(1, 1, 1, 1);
-                rowLayout.addView(targetGrid[j][i]);
             }
-            layout.addView(rowLayout);
         }
         return targetGrid;
     }
