@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -34,9 +35,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private LinearLayout topGrid[][];
-    private int firstRow = 0;
+    private int firstRow = 1;
     private int firstColumn = 2;
-    private int secondRow = 1;
+    private int secondRow = 0;
     private int secondColumn = 2;
 
     private LinearLayout topNextGrid[][];
@@ -72,6 +73,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ivt1Button.setOnClickListener(this);
         Button ivt2Button = (Button) findViewById(R.id.button_right);
         ivt2Button.setOnClickListener(this);
+        Button ivt3Button = (Button) findViewById(R.id.button_X);
+        ivt3Button.setOnClickListener(this);
+        Button ivt4Button = (Button) findViewById(R.id.button_Z);
+        ivt4Button.setOnClickListener(this);
+
+
         mark = new Point();
         mark.set(6, 3);
         grid[mark.x][mark.y].setBackgroundColor(Color.RED);
@@ -79,15 +86,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstColumn][firstRow].getBackground();
+        ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondColumn][secondRow].getBackground();
+        int nextSecondColumn;
+        int nextSecondRow;
+
         switch (v.getId()) {
             case R.id.button_left:
-//                Log.d("testq111111",String.valueOf(isValidMove("left")));
                 if ( isValidMove("left")) {
-                    ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstColumn][firstRow].getBackground();
                     topGrid[firstColumn - 1][firstRow].setBackgroundColor(firstGridColor.getColor());
                     topGrid[firstColumn][firstRow].setBackgroundColor(none);
 
-                    ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondColumn][secondRow].getBackground();
                     topGrid[secondColumn - 1][secondRow].setBackgroundColor(secondGridColor.getColor());
                     topGrid[secondColumn][secondRow].setBackgroundColor(none);
 
@@ -97,11 +106,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_right:
                 if ( isValidMove("right")) {
-                    ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstColumn][firstRow].getBackground();
                     topGrid[firstColumn + 1][firstRow].setBackgroundColor(firstGridColor.getColor());
                     topGrid[firstColumn][firstRow].setBackgroundColor(none);
 
-                    ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondColumn][secondRow].getBackground();
                     topGrid[secondColumn + 1][secondRow].setBackgroundColor(secondGridColor.getColor());
                     topGrid[secondColumn][secondRow].setBackgroundColor(none);
 
@@ -110,8 +117,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.button_X:
+                nextSecondColumn = getRotatedSecondColumn("left");
+                nextSecondRow = getRotatedSecondRow("left");
+
+                topGrid[nextSecondColumn][nextSecondRow].setBackgroundColor(secondGridColor.getColor());
+                if(isValidRotation("left")) {
+                    topGrid[secondColumn][secondRow].setBackgroundColor(none);
+                }
+                secondColumn = nextSecondColumn;
+                secondRow = nextSecondRow;
                 break;
             case R.id.button_Z:
+                nextSecondColumn = getRotatedSecondColumn("right");
+                nextSecondRow = getRotatedSecondRow("right");
+
+                topGrid[nextSecondColumn][nextSecondRow].setBackgroundColor(secondGridColor.getColor());
+                if(isValidRotation("right")) {
+                    topGrid[secondColumn][secondRow].setBackgroundColor(none);
+                }
+
+                secondColumn = nextSecondColumn;
+                secondRow = nextSecondRow;
                 break;
             case R.id.button_down:
                 break;
@@ -169,7 +195,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private boolean isValidMove (String move) {
-        Log.d("test",move);
         switch (move) {
             case "left":
                 if (firstColumn == 0) { return false; }
@@ -186,7 +211,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private boolean isValidRotation (String rotation) {
-        Log.d("test", rotation);
         if (rotation == "left") {
             if (firstColumn == 0 && secondRow == 0) { return false; }
             if (firstColumn == column - 1 && secondRow == 2) { return false; }
@@ -197,4 +221,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         return true;
     }
+
+    private int getRotatedSecondColumn (String rotation) {
+ //       Log.d("testqcol",String.valueOf(isValidRotation(rotation)));
+        if (!isValidRotation(rotation)) { return secondColumn; }
+
+        if (secondColumn == firstColumn && secondRow == firstRow - 1) {
+            HashMap<String, Integer> map = new HashMap<>();
+            map.put("right", firstColumn + 1);
+            map.put("left", firstColumn - 1);
+            return map.get(rotation);
+        }
+        if (secondColumn == firstColumn && secondRow == firstRow + 1) {
+            HashMap<String, Integer> map = new HashMap<>();
+            map.put("right", firstColumn - 1);
+            map.put("left", firstColumn + 1);
+            return map.get(rotation);
+        }
+        return firstColumn;
+    }
+
+    private int getRotatedSecondRow (String rotation) {
+        Log.d("testqrow",String.valueOf(isValidRotation(rotation)));
+        if (!isValidRotation(rotation)) { return secondRow; }
+
+        if (secondRow == firstRow && secondColumn == firstColumn - 1) {
+            HashMap<String, Integer> map = new HashMap<>();
+            map.put("right", firstRow - 1);
+            map.put("left", firstRow + 1);
+            return map.get(rotation);
+        }
+        if (secondRow == firstRow && secondColumn == firstColumn + 1) {
+            HashMap<String, Integer> map = new HashMap<>();
+            map.put("right", firstRow + 1);
+            map.put("left", firstRow - 1);
+            return map.get(rotation);
+        }
+        return firstRow;
+    }
+
 }
