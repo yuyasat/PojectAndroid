@@ -26,6 +26,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private final int topRow = 3;
     private final int topNextColumn = 2;
     private final int topNextRow = 2;
+    private final int initialFirstRow = 1;
+    private final int initialFirstColumn = 2;
+    private final int initialSecondRow = 0;
+    private final int initialSecondColumn = 2;
     private final int none = Color.WHITE;
     private final int red = Color.RED;
     private final int blue = Color.BLUE;
@@ -35,10 +39,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private LinearLayout topGrid[][];
-    private int firstRow = 1;
-    private int firstColumn = 2;
-    private int secondRow = 0;
-    private int secondColumn = 2;
+    private int firstRow = initialFirstRow;
+    private int firstColumn = initialFirstColumn;
+    private int secondRow = initialSecondRow;
+    private int secondColumn = initialSecondColumn;
 
     private LinearLayout topNextGrid[][];
     private LinearLayout grid[][];
@@ -79,40 +83,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ivt4Button.setOnClickListener(this);
         Button ivt5Button = (Button) findViewById(R.id.button_down);
         ivt5Button.setOnClickListener(this);
-
-
-        mark = new Point();
-        mark.set(6, 3);
-        grid[mark.x][mark.y].setBackgroundColor(Color.RED);
     }
 
     @Override
     public void onClick(View v) {
         ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstRow][firstColumn].getBackground();
         ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondRow][secondColumn].getBackground();
+        int firstColor = firstGridColor.getColor();
+        int secondColor = secondGridColor.getColor();
+
         int nextSecondColumn;
         int nextSecondRow;
 
+        Log.d("FirstRow", String.valueOf(firstRow));
+        Log.d("FirstColumn", String.valueOf(firstColumn));
+        Log.d("SecondRow", String.valueOf(secondRow));
+        Log.d("SecondColumn", String.valueOf(secondColumn));
+
         switch (v.getId()) {
             case R.id.button_left:
-                if ( isValidMove("left")) {
-                    topGrid[firstRow][firstColumn - 1].setBackgroundColor(firstGridColor.getColor());
-                    topGrid[firstRow][firstColumn].setBackgroundColor(none);
+                Log.d("buttonL", String.valueOf(isValidMove("left")));
+                Log.d("buttonL:FirstGridColor", Integer.toString(firstColor));
+                Log.d("buttonL:secondGridColor", Integer.toString(secondColor));
 
-                    topGrid[secondRow][secondColumn - 1].setBackgroundColor(secondGridColor.getColor());
+                if ( isValidMove("left")) {
+                    topGrid[firstRow][firstColumn].setBackgroundColor(none);
                     topGrid[secondRow][secondColumn].setBackgroundColor(none);
+                    topGrid[firstRow][firstColumn - 1].setBackgroundColor(firstColor);
+                    topGrid[secondRow][secondColumn - 1].setBackgroundColor(secondColor);
 
                     firstColumn -= 1;
                     secondColumn -= 1;
                 }
                 break;
             case R.id.button_right:
-                if ( isValidMove("right")) {
-                    topGrid[firstRow][firstColumn + 1].setBackgroundColor(firstGridColor.getColor());
-                    topGrid[firstRow][firstColumn].setBackgroundColor(none);
+                Log.d("buttonR", String.valueOf(isValidMove("right")));
+                Log.d("buttonR:FirstGridColor", Integer.toString(firstColor));
+                Log.d("buttonR:secondGridColor", Integer.toString(secondColor));
 
-                    topGrid[secondRow][secondColumn + 1].setBackgroundColor(secondGridColor.getColor());
+                if ( isValidMove("right")) {
+                    topGrid[firstRow][firstColumn].setBackgroundColor(none);
                     topGrid[secondRow][secondColumn].setBackgroundColor(none);
+                    topGrid[firstRow][firstColumn + 1].setBackgroundColor(firstColor);
+                    topGrid[secondRow][secondColumn + 1].setBackgroundColor(secondColor);
 
                     firstColumn += 1;
                     secondColumn += 1;
@@ -143,6 +156,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_down:
                 grid = getDropedGridStates();
+                ColorDrawable firstNextColor = (ColorDrawable) topNextGrid[0][0].getBackground();
+                ColorDrawable secondNextColor = (ColorDrawable) topNextGrid[1][0].getBackground();
+                topGrid[firstRow][firstColumn].setBackgroundColor(none);
+                topGrid[secondRow][secondColumn].setBackgroundColor(none);
+                topGrid[0][2].setBackgroundColor(firstNextColor.getColor());
+                topGrid[1][2].setBackgroundColor(secondNextColor.getColor());
+
+                ColorDrawable firstNextNextColor = (ColorDrawable) topNextGrid[0][1].getBackground();
+                ColorDrawable secondNextNextColor = (ColorDrawable) topNextGrid[1][1].getBackground();
+                topNextGrid[0][0].setBackgroundColor(firstNextNextColor.getColor());
+                topNextGrid[1][0].setBackgroundColor(secondNextNextColor.getColor());
+
+                Random rnd = new Random();
+                topNextGrid[0][1].setBackgroundColor(colors[rnd.nextInt(4)]);
+                topNextGrid[1][1].setBackgroundColor(colors[rnd.nextInt(4)]);
+
+                firstRow = initialFirstRow;
+                firstColumn = initialFirstColumn;
+                secondRow = initialSecondRow;
+                secondColumn = initialSecondColumn;
+
                 break;
             default:
                 break;
@@ -263,12 +297,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private LinearLayout[][] getDropedGridStates() {
-        // grid[2][1].setBackgroundColor(Color.GREEN);
-
         int r1 = row - 1;
         int dropedFirstRow = secondRow == firstRow + 1 ? r1 - 1 : r1;
-        // Log.d("gridlength" + Integer.toString(r1),Integer.toString(grid.length));
-        // Log.d("gridrowlength" + Integer.toString(r1),Integer.toString(grid[0].length));
 
         while (r1 >= 0 && ((ColorDrawable) grid[r1][firstColumn].getBackground()).getColor() != none) {
             Log.d("testqcol" + Integer.toString(r1),Integer.toString(((ColorDrawable) grid[r1][firstColumn].getBackground()).getColor()));
@@ -286,7 +316,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstRow][firstColumn].getBackground();
         ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondRow][secondColumn].getBackground();
-        Log.d("testqcolAA", Integer.toString((firstGridColor.getColor())));
 
         if (dropedFirstRow >= 0) {
             grid[dropedFirstRow][firstColumn].setBackgroundColor(firstGridColor.getColor());
@@ -294,8 +323,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (dropedSecondRow >= 0) {
             grid[dropedSecondRow][secondColumn].setBackgroundColor(secondGridColor.getColor());
         }
-        Log.d("testqcolAA2", Integer.toString(((ColorDrawable) grid[dropedFirstRow][firstColumn].getBackground()).getColor()));
-
 
         return grid;
     }
