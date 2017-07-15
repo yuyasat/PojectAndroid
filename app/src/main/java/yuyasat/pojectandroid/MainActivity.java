@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
+import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -177,6 +178,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 secondRow = initialSecondRow;
                 secondColumn = initialSecondColumn;
 
+                chain(grid, 0);
                 break;
             default:
                 break;
@@ -326,4 +328,122 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         return grid;
     }
+
+    private LinearLayout[][] chain (LinearLayout[][] chainedGridStates, int chainCount){
+        CountAndGrid countAndGrid = getDeletedGridStates(chainedGridStates, chainCount);
+        int countedChainCount = countAndGrid.count;
+        grid = countAndGrid.grids;
+        dropGrids(grid, chainCount);
+        return grid;
+
+    }
+
+    private CountAndGrid getDeletedGridStates(LinearLayout[][] grids, int chainCount) {
+        int deletedColor = none;
+        Log.d("length1", Integer.toString(grids.length));
+        for (int j = 0; j < grids.length; j++) {
+            Log.d("length2", Integer.toString(grids[j].length));
+            for (int i = 0; i < grids[j].length; i++) {
+                Log.d("GURUGURU", "j:" + Integer.toString(j) + ",i:" + Integer.toString(i));
+                // Log.d("testqcol", Integer.toString(countColor(j, i, grids)));
+                if (((ColorDrawable) grid[j][i].getBackground()).getColor() != none && countColor(j, i, grids) >= 4) {
+                    if (deletedColor == none || deletedColor == ((ColorDrawable) grid[j][i].getBackground()).getColor()) {
+                        deletedColor = ((ColorDrawable) grid[j][i].getBackground()).getColor();
+                        chainCount++;
+                    }
+                    grids = deleteColor(j, i, grids);
+                }
+            }
+        }
+        CountAndGrid countAndGrid = new CountAndGrid(chainCount, grids);
+        return countAndGrid;
+    }
+
+    private int countColor (int j, int i, LinearLayout[][] grids) {
+        int color = ((ColorDrawable) grids[j][i].getBackground()).getColor();
+        int n = 1;
+        grids[j][i].setBackgroundColor(none);
+        Log.d("countcoler,j:" + Integer.toString(j) + ",i:" + Integer.toString(i), String.valueOf(j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color));
+        if (j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color) {
+            n += countColor(j - 1, i, grids);
+        }
+        if (j + 1 < row && ((ColorDrawable) grids[j + 1][i].getBackground()).getColor() == color) {
+            n += countColor(j + 1, i, grids);
+        }
+        if (i - 1 >= 0 && ((ColorDrawable) grids[j][i - 1].getBackground()).getColor() == color) {
+            n += countColor(j, i - 1, grids);
+        }
+        if (i + 1 < column && ((ColorDrawable) grids[j][i + 1].getBackground()).getColor() == color) {
+            n += countColor(j, i + 1, grids);
+        }
+        grids[j][i].setBackgroundColor(color);
+        return n;
+    }
+
+    private LinearLayout[][] deleteColor (int j, int i, LinearLayout[][] grids) {
+        int color = ((ColorDrawable) grids[j][i].getBackground()).getColor();
+        grids[j][i].setBackgroundColor(none);
+
+        if (j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color) {
+            Log.d("deleteoler", "j-1");
+            deleteColor(j - 1, i, grids);
+        }
+        if (j + 1 < row && ((ColorDrawable) grids[j + 1][i].getBackground()).getColor() == color) {
+            Log.d("deleteoler", "j+1");
+            deleteColor(j + 1, i, grids);
+        }
+        if (i - 1 >= 0 && ((ColorDrawable) grids[j][i - 1].getBackground()).getColor() == color) {
+            Log.d("deleteoler", "i-1");
+            deleteColor(j, i - 1, grids);
+        }
+        if (i + 1 < column && ((ColorDrawable) grids[j][i + 1].getBackground()).getColor() == color) {
+            Log.d("deleteoler", "i+1");
+            deleteColor(j, i + 1, grids);
+        }
+        return grids;
+    }
+
+//    private LinearLayout[][] allocateGrids(LinearLayout[][] grids) {
+     private CountAndGrid allocateGrids(LinearLayout[][] grids) {
+
+        int count = 0;
+        for (int i = 0; i< grids[0].length; i++) {
+            int spaces = 0;
+            for (int j = grids.length - 1; j >= 0; j--) {
+                if (((ColorDrawable) grid[j][i].getBackground()).getColor() == none) {
+                  spaces++;
+                } else if (spaces > 0) {
+                    grids[j + spaces][i].setBackgroundColor(((ColorDrawable) grid[j][i].getBackground()).getColor());
+                    grids[j][i].setBackgroundColor(none);
+                    count++;
+                }
+            }
+        }
+        CountAndGrid countAndGrid = new CountAndGrid(count, grids);
+        return countAndGrid;
+    }
+
+    private LinearLayout[][] dropGrids (LinearLayout[][] deletedGridStates, int chainCount) {
+        CountAndGrid countAndGrid = allocateGrids(deletedGridStates);
+        grid = countAndGrid.grids;
+
+        if (countAndGrid.count > 0) {
+            chain(grid, chainCount);
+        } else {
+
+        }
+        return grid;
+
+    }
+
+    class CountAndGrid {
+        public int count;
+        public LinearLayout[][] grids;
+
+        CountAndGrid(int count, LinearLayout[][] grids) {
+            this.count = count;
+            this.grids = grids;
+        }
+    }
 }
+
