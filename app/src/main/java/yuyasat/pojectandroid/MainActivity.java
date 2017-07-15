@@ -92,11 +92,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int nextSecondColumn;
         int nextSecondRow;
 
-        Log.d("FirstRow", String.valueOf(firstRow));
-        Log.d("FirstColumn", String.valueOf(firstColumn));
-        Log.d("SecondRow", String.valueOf(secondRow));
-        Log.d("SecondColumn", String.valueOf(secondColumn));
-
         switch (v.getId()) {
             case R.id.button_left:
                 if (isValidMove("left")) {
@@ -313,8 +308,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int dropedFirstRow = secondRow == firstRow + 1 ? r1 - 1 : r1;
 
         while (r1 >= 0 && ((ColorDrawable) grid[r1][firstColumn].getBackground()).getColor() != none) {
-            Log.d("testqcol" + Integer.toString(r1),Integer.toString(((ColorDrawable) grid[r1][firstColumn].getBackground()).getColor()));
-
             dropedFirstRow = secondRow == firstRow + 1 ? r1 - 2 : r1 - 1;
             r1--;
         }
@@ -350,12 +343,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private CountAndGrid getDeletedGridStates(LinearLayout[][] grids, int chainCount) {
         int deletedColor = none;
-        Log.d("length1", Integer.toString(grids.length));
         for (int j = 0; j < grids.length; j++) {
-            Log.d("length2", Integer.toString(grids[j].length));
             for (int i = 0; i < grids[j].length; i++) {
-                Log.d("GURUGURU", "j:" + Integer.toString(j) + ",i:" + Integer.toString(i));
-                // Log.d("testqcol", Integer.toString(countColor(j, i, grids)));
                 if (((ColorDrawable) grid[j][i].getBackground()).getColor() != none && countColor(j, i, grids) >= 4) {
                     if (deletedColor == none || deletedColor == ((ColorDrawable) grid[j][i].getBackground()).getColor()) {
                         deletedColor = ((ColorDrawable) grid[j][i].getBackground()).getColor();
@@ -373,7 +362,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int color = ((ColorDrawable) grids[j][i].getBackground()).getColor();
         int n = 1;
         grids[j][i].setBackgroundColor(none);
-        Log.d("countcoler,j:" + Integer.toString(j) + ",i:" + Integer.toString(i), String.valueOf(j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color));
         if (j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color) {
             n += countColor(j - 1, i, grids);
         }
@@ -395,19 +383,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         grids[j][i].setBackgroundColor(none);
 
         if (j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color) {
-            Log.d("deleteoler", "j-1");
             deleteColor(j - 1, i, grids);
         }
         if (j + 1 < row && ((ColorDrawable) grids[j + 1][i].getBackground()).getColor() == color) {
-            Log.d("deleteoler", "j+1");
             deleteColor(j + 1, i, grids);
         }
         if (i - 1 >= 0 && ((ColorDrawable) grids[j][i - 1].getBackground()).getColor() == color) {
-            Log.d("deleteoler", "i-1");
             deleteColor(j, i - 1, grids);
         }
         if (i + 1 < column && ((ColorDrawable) grids[j][i + 1].getBackground()).getColor() == color) {
-            Log.d("deleteoler", "i+1");
             deleteColor(j, i + 1, grids);
         }
         return grids;
