@@ -1,28 +1,28 @@
 package yuyasat.pojectandroid;
 
 import android.graphics.Color;
-import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import java.lang.reflect.Array;
-import java.util.HashMap;
 import java.util.Random;
+
+import yuyasat.pojectandroid.algorithm.Algorithm;
+import yuyasat.pojectandroid.entity.CountAndGrid;
+import yuyasat.pojectandroid.entity.TopState;
+import yuyasat.pojectandroid.operation.KeyOperation;
 
 /**
  * Created by yuyataki on 2017/05/28.
  */
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private static final int COLUMN = 7;
-    private static final int ROW = 11;
+    public static final int COLUMN = 7;
+    public static final int ROW = 11;
 
     private static final int TOP_ROW = 3;
     private static final int TOP_NEXT_COLUMN = 2;
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int INITIAL_FIRST_COLUMN = 2;
     private static final int INITIAL_SECOND_ROW = 0;
     private static final int INITIAL_SECOND_COLUMN = 2;
-    private static final int NONE = Color.WHITE;
+    public static final int NONE = Color.WHITE;
     private static final int RED = Color.RED;
     private static final int BLUE = Color.BLUE;
     private static final int GREEN = Color.GREEN;
@@ -92,9 +92,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int nextSecondColumn;
         int nextSecondRow;
 
+        TopState topState = new TopState(firstColumn, secondColumn, firstRow, secondRow, firstColor, secondColor, topGrid);
+        KeyOperation keyOperation = new KeyOperation(topState);
+
         switch (v.getId()) {
             case R.id.button_left:
-                if (isValidMove("left")) {
+                if (keyOperation.isValidMove("left")) {
                     topGrid[firstRow][firstColumn].setBackgroundColor(NONE);
                     topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
                     topGrid[firstRow][firstColumn - 1].setBackgroundColor(firstColor);
@@ -105,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.button_right:
-                if (isValidMove("right")) {
+                if (keyOperation.isValidMove("right")) {
                     topGrid[firstRow][firstColumn].setBackgroundColor(NONE);
                     topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
                     topGrid[firstRow][firstColumn + 1].setBackgroundColor(firstColor);
@@ -116,22 +119,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.button_X:
-                nextSecondColumn = getRotatedSecondColumn("left");
-                nextSecondRow = getRotatedSecondRow("left");
+                nextSecondColumn = keyOperation.getRotatedSecondColumn("left");
+                nextSecondRow = keyOperation.getRotatedSecondRow("left");
 
                 topGrid[nextSecondRow][nextSecondColumn].setBackgroundColor(secondGridColor.getColor());
-                if (isValidRotation("left")) {
+                if (keyOperation.isValidRotation("left")) {
                     topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
                 }
                 secondColumn = nextSecondColumn;
                 secondRow = nextSecondRow;
                 break;
             case R.id.button_Z:
-                nextSecondColumn = getRotatedSecondColumn("right");
-                nextSecondRow = getRotatedSecondRow("right");
+                nextSecondColumn = keyOperation.getRotatedSecondColumn("right");
+                nextSecondRow = keyOperation.getRotatedSecondRow("right");
 
                 topGrid[nextSecondRow][nextSecondColumn].setBackgroundColor(secondGridColor.getColor());
-                if (isValidRotation("right")) {
+                if (keyOperation.isValidRotation("right")) {
                     topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
                 }
 
@@ -139,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 secondRow = nextSecondRow;
                 break;
             case R.id.button_down:
-                grid = getDropedGridStates();
+                grid = keyOperation.getDropedGridStates(grid, topGrid);
                 ColorDrawable firstNextColor = (ColorDrawable) topNextGrid[0][0].getBackground();
                 ColorDrawable secondNextColor = (ColorDrawable) topNextGrid[1][0].getBackground();
                 topGrid[firstRow][firstColumn].setBackgroundColor(NONE);
@@ -187,6 +190,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         LinearLayout.LayoutParams gridLayoutParams =
                 new LinearLayout.LayoutParams(convertToDPI(gridWidth, metrics), convertToDPI(gridHeight, metrics));
 
+        int margin = convertToDPI(1, metrics);
         for (int i = 0; i < row; i++) {
             LinearLayout rowLayout = new LinearLayout(this);
             rowLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -195,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 targetGrid[i][j] = new LinearLayout(this);
                 targetGrid[i][j].setLayoutParams(gridLayoutParams);
                 targetGrid[i][j].setBackgroundColor(Color.WHITE);
-                gridLayoutParams.setMargins(convertToDPI(1, metrics), convertToDPI(1, metrics), convertToDPI(1, metrics), convertToDPI(1, metrics));
+                gridLayoutParams.setMargins(margin, margin, margin, margin);
             }
         }
         return targetGrid;
@@ -221,117 +225,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return targetGrid;
     }
 
-    private boolean isValidMove(String move) {
-        switch (move) {
-            case "left":
-                if (firstColumn == 0) {
-                    return false;
-                }
-                if (firstColumn == 1 && secondColumn == 0) {
-                    return false;
-                }
-                return true;
-            case "right":
-                if (firstColumn == COLUMN - 1) {
-                    return false;
-                }
-                if (firstColumn == COLUMN - 2 && secondColumn == COLUMN - 1) {
-                    return false;
-                }
-                return true;
-        }
-        return false;
-    }
-
-    private boolean isValidRotation(String rotation) {
-        if (rotation == "left") {
-            if (firstColumn == 0 && secondRow == 0) {
-                return false;
-            }
-            if (firstColumn == COLUMN - 1 && secondRow == 2) {
-                return false;
-            }
-        }
-        if (rotation == "right") {
-            if (firstColumn == 0 && secondRow == 2) {
-                return false;
-            }
-            if (firstColumn == COLUMN - 1 && secondRow == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private int getRotatedSecondColumn(String rotation) {
-        if (!isValidRotation(rotation)) {
-            return secondColumn;
-        }
-
-        if (secondColumn == firstColumn && secondRow == firstRow - 1) {
-            HashMap<String, Integer> map = new HashMap<>();
-            map.put("right", firstColumn + 1);
-            map.put("left", firstColumn - 1);
-            return map.get(rotation);
-        }
-        if (secondColumn == firstColumn && secondRow == firstRow + 1) {
-            HashMap<String, Integer> map = new HashMap<>();
-            map.put("right", firstColumn - 1);
-            map.put("left", firstColumn + 1);
-            return map.get(rotation);
-        }
-        return firstColumn;
-    }
-
-    private int getRotatedSecondRow(String rotation) {
-        if (!isValidRotation(rotation)) {
-            return secondRow;
-        }
-
-        if (secondRow == firstRow && secondColumn == firstColumn - 1) {
-            HashMap<String, Integer> map = new HashMap<>();
-            map.put("right", firstRow - 1);
-            map.put("left", firstRow + 1);
-            return map.get(rotation);
-        }
-        if (secondRow == firstRow && secondColumn == firstColumn + 1) {
-            HashMap<String, Integer> map = new HashMap<>();
-            map.put("right", firstRow + 1);
-            map.put("left", firstRow - 1);
-            return map.get(rotation);
-        }
-        return firstRow;
-    }
-
-    private LinearLayout[][] getDropedGridStates() {
-        int r1 = ROW - 1;
-        int dropedFirstRow = secondRow == firstRow + 1 ? r1 - 1 : r1;
-
-        while (r1 >= 0 && ((ColorDrawable) grid[r1][firstColumn].getBackground()).getColor() != NONE) {
-            dropedFirstRow = secondRow == firstRow + 1 ? r1 - 2 : r1 - 1;
-            r1--;
-        }
-
-        int r2 = ROW - 1;
-        int dropedSecondRow = secondRow == firstRow - 1 ? r2 - 1 : r2;
-        while (r2 >= 0 && ((ColorDrawable) grid[r2][secondColumn].getBackground()).getColor() != NONE) {
-            dropedSecondRow = secondRow == firstRow - 1 ? r2 - 2 : r2 - 1;
-            r2--;
-        }
-
-        ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstRow][firstColumn].getBackground();
-        ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondRow][secondColumn].getBackground();
-
-        if (dropedFirstRow >= 0) {
-            grid[dropedFirstRow][firstColumn].setBackgroundColor(firstGridColor.getColor());
-        }
-        if (dropedSecondRow >= 0) {
-            grid[dropedSecondRow][secondColumn].setBackgroundColor(secondGridColor.getColor());
-        }
-
-        return grid;
-    }
-
     private LinearLayout[][] chain(LinearLayout[][] chainedGridStates, int chainCount) {
         CountAndGrid countAndGrid = getDeletedGridStates(chainedGridStates, chainCount);
         int countedChainCount = countAndGrid.count;
@@ -345,12 +238,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int deletedColor = NONE;
         for (int j = 0; j < grids.length; j++) {
             for (int i = 0; i < grids[j].length; i++) {
-                if (((ColorDrawable) grid[j][i].getBackground()).getColor() != NONE && countColor(j, i, grids) >= 4) {
+                if (((ColorDrawable) grid[j][i].getBackground()).getColor() != NONE && Algorithm.countColor(j, i, grids) >= 4) {
                     if (deletedColor == NONE || deletedColor == ((ColorDrawable) grid[j][i].getBackground()).getColor()) {
                         deletedColor = ((ColorDrawable) grid[j][i].getBackground()).getColor();
                         chainCount++;
                     }
-                    grids = deleteColor(j, i, grids);
+                    grids = Algorithm.deleteColor(j, i, grids);
                 }
             }
         }
@@ -358,65 +251,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return countAndGrid;
     }
 
-    private int countColor(int j, int i, LinearLayout[][] grids) {
-        int color = ((ColorDrawable) grids[j][i].getBackground()).getColor();
-        int n = 1;
-        grids[j][i].setBackgroundColor(NONE);
-        if (j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color) {
-            n += countColor(j - 1, i, grids);
-        }
-        if (j + 1 < ROW && ((ColorDrawable) grids[j + 1][i].getBackground()).getColor() == color) {
-            n += countColor(j + 1, i, grids);
-        }
-        if (i - 1 >= 0 && ((ColorDrawable) grids[j][i - 1].getBackground()).getColor() == color) {
-            n += countColor(j, i - 1, grids);
-        }
-        if (i + 1 < COLUMN && ((ColorDrawable) grids[j][i + 1].getBackground()).getColor() == color) {
-            n += countColor(j, i + 1, grids);
-        }
-        grids[j][i].setBackgroundColor(color);
-        return n;
-    }
-
-    private LinearLayout[][] deleteColor(int j, int i, LinearLayout[][] grids) {
-        int color = ((ColorDrawable) grids[j][i].getBackground()).getColor();
-        grids[j][i].setBackgroundColor(NONE);
-
-        if (j - 1 >= 0 && ((ColorDrawable) grids[j - 1][i].getBackground()).getColor() == color) {
-            deleteColor(j - 1, i, grids);
-        }
-        if (j + 1 < ROW && ((ColorDrawable) grids[j + 1][i].getBackground()).getColor() == color) {
-            deleteColor(j + 1, i, grids);
-        }
-        if (i - 1 >= 0 && ((ColorDrawable) grids[j][i - 1].getBackground()).getColor() == color) {
-            deleteColor(j, i - 1, grids);
-        }
-        if (i + 1 < COLUMN && ((ColorDrawable) grids[j][i + 1].getBackground()).getColor() == color) {
-            deleteColor(j, i + 1, grids);
-        }
-        return grids;
-    }
-
-    private CountAndGrid allocateGrids(LinearLayout[][] grids) {
-        int count = 0;
-        for (int i = 0; i < grids[0].length; i++) {
-            int spaces = 0;
-            for (int j = grids.length - 1; j >= 0; j--) {
-                if (((ColorDrawable) grid[j][i].getBackground()).getColor() == NONE) {
-                    spaces++;
-                } else if (spaces > 0) {
-                    grids[j + spaces][i].setBackgroundColor(((ColorDrawable) grid[j][i].getBackground()).getColor());
-                    grids[j][i].setBackgroundColor(NONE);
-                    count++;
-                }
-            }
-        }
-        CountAndGrid countAndGrid = new CountAndGrid(count, grids);
-        return countAndGrid;
-    }
-
     private LinearLayout[][] dropGrids(LinearLayout[][] deletedGridStates, int chainCount) {
-        CountAndGrid countAndGrid = allocateGrids(deletedGridStates);
+        CountAndGrid countAndGrid = Algorithm.allocateGrids(deletedGridStates);
         grid = countAndGrid.grids;
 
         if (countAndGrid.count > 0) {
@@ -430,15 +266,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static int convertToDPI(int size, DisplayMetrics metrics) {
         return (size * metrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
-    }
-
-    class CountAndGrid {
-        public int count;
-        public LinearLayout[][] grids;
-
-        CountAndGrid(int count, LinearLayout[][] grids) {
-            this.count = count;
-            this.grids = grids;
-        }
     }
 }
