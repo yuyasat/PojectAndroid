@@ -8,8 +8,12 @@ import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.os.Handler;
 
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.RunnableFuture;
 
 import yuyasat.pojectandroid.algorithm.Algorithm;
 import yuyasat.pojectandroid.entity.CountAndGrid;
@@ -49,6 +53,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private int firstColumn = INITIAL_FIRST_COLUMN;
     private int secondRow = INITIAL_SECOND_ROW;
     private int secondColumn = INITIAL_SECOND_COLUMN;
+    private ChainTimerTask chainTimerTask = null;
+    private SetGridTimerTask setGridTimerTask = null;
+    private DropGridTimerTask dropGridTimerTask = null;
+    private Timer mTimer = null;
+    private Handler mHandler = new Handler();
 
     private LinearLayout.LayoutParams rowLayoutParams =
             new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1);
@@ -83,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
+        if (mTimer != null) { return; }
         ColorDrawable firstGridColor = (ColorDrawable) topGrid[firstRow][firstColumn].getBackground();
         ColorDrawable secondGridColor = (ColorDrawable) topGrid[secondRow][secondColumn].getBackground();
 
@@ -164,7 +174,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 secondRow = INITIAL_SECOND_ROW;
                 secondColumn = INITIAL_SECOND_COLUMN;
 
-                chain(grid, 0);
+                chainTimerTask = new ChainTimerTask();
+                chainTimerTask.setChainCount(0);
+                mTimer = new Timer();
+                mTimer.schedule(chainTimerTask, 400);
                 break;
             default:
                 break;
@@ -228,10 +241,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private LinearLayout[][] chain(LinearLayout[][] chainedGridStates, int chainCount) {
         CountAndGrid countAndGrid = getDeletedGridStates(chainedGridStates, chainCount);
         int countedChainCount = countAndGrid.count;
-        grid = countAndGrid.grids;
-        dropGrids(grid, chainCount);
-        return grid;
+        setGridTimerTask = new SetGridTimerTask();
 
+        if (mTimer != null) {
+            mTimer.cancel();
+            mTimer = null;
+        }
+        setGridTimerTask = new SetGridTimerTask();
+        setGridTimerTask.setChainCount(chainCount);
+        setGridTimerTask.setCountAndGrid(countAndGrid);
+        mTimer = new Timer(true);
+        mTimer.schedule(setGridTimerTask, 200);
+        return grid;
     }
 
     private CountAndGrid getDeletedGridStates(LinearLayout[][] grids, int chainCount) {
@@ -255,10 +276,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CountAndGrid countAndGrid = Algorithm.allocateGrids(deletedGridStates);
         grid = countAndGrid.grids;
 
+        chainTimerTask = new ChainTimerTask();
+        chainTimerTask.setChainCount(chainCount);
+        mTimer = new Timer();
         if (countAndGrid.count > 0) {
-            chain(grid, chainCount);
+            mTimer.scheduleAtFixedRate(chainTimerTask, 200, 200);
         } else {
-
+            mTimer.cancel();
+            mTimer = null;
         }
         return grid;
 
@@ -266,5 +291,61 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public static int convertToDPI(int size, DisplayMetrics metrics) {
         return (size * metrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
+    }
+    class ChainTimerTask extends TimerTask {
+        private int chainCount;
+
+        @Override
+        public void run() {
+            mHandler.post(new Runnable() {
+                public void run() {
+                    chain(grid, chainCount);
+                }
+            });
+        }
+        public void setChainCount(int chainCount) {
+            this.chainCount = chainCount;
+        }
+    }
+
+    class SetGridTimerTask extends TimerTask {
+        private CountAndGrid countAndGrid;
+        private int chainCount;
+
+        @Override
+        public void run() {
+            grid = countAndGrid.grids;
+            dropGridTimerTask = new DropGridTimerTask();
+            dropGridTimerTask.setChainCount(chainCount);
+            dropGridTimerTask.setCountAndGrid(countAndGrid);
+            mTimer = new Timer(true);
+            mTimer.schedule(dropGridTimerTask, 200);
+        }
+        public void setCountAndGrid(CountAndGrid countAndGrid) {
+            this.countAndGrid = countAndGrid;
+        }
+        public void setChainCount(int chainCount) {
+            this.chainCount = chainCount;
+        }
+    }
+
+    class DropGridTimerTask extends TimerTask {
+        private CountAndGrid countAndGrid;
+        private int chainCount;
+
+        @Override
+        public void run() {
+            mHandler.post(new Runnable() {
+                public void run() {
+                    dropGrids(grid, chainCount);
+                }
+            });
+        }
+        public void setCountAndGrid(CountAndGrid countAndGrid) {
+            this.countAndGrid = countAndGrid;
+        }
+        public void setChainCount(int chainCount) {
+            this.chainCount = chainCount;
+        }
     }
 }
