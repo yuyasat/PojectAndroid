@@ -13,15 +13,13 @@
 
         <LinearLayout
             android:id="@+id/top_field"
-            android:layout_width="0dp"
-            android:layout_weight="0.7"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#00ffff"
             android:orientation="vertical"></LinearLayout>
         <LinearLayout
             android:id="@+id/top_next_field"
-            android:layout_width="0dp"
-            android:layout_weight="0.3"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:background="#0000ff"
@@ -32,20 +30,11 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:layout_marginStart="5dp">
-
         <LinearLayout
             android:id="@+id/field"
-            android:layout_width="0dp"
-            android:layout_weight="0.7"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="#000000"
             android:orientation="vertical"></LinearLayout>
-        <LinearLayout
-            android:id="@+id/side_field"
-            android:layout_width="0dp"
-            android:layout_weight="0.3"
-            android:layout_height="wrap_content"
-            android:background="#0000ff"
-            android:orientation="horizontal"></LinearLayout>
     </LinearLayout>
 </LinearLayout>
