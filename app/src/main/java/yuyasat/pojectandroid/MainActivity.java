@@ -18,6 +18,12 @@ import java.util.concurrent.RunnableFuture;
 import yuyasat.pojectandroid.algorithm.Algorithm;
 import yuyasat.pojectandroid.entity.CountAndGrid;
 import yuyasat.pojectandroid.entity.TopState;
+import yuyasat.pojectandroid.operation.ButtonLeftClickListener;
+import yuyasat.pojectandroid.operation.ButtonRightClickListener;
+
+
+import yuyasat.pojectandroid.operation.ButtonXClickListener;
+import yuyasat.pojectandroid.operation.ButtonZClickListener;
 import yuyasat.pojectandroid.operation.KeyOperation;
 
 /**
@@ -31,33 +37,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private static final int TOP_ROW = 3;
     private static final int TOP_NEXT_COLUMN = 2;
     private static final int TOP_NEXT_ROW = 2;
-    private static final int INITIAL_FIRST_ROW = 1;
-    private static final int INITIAL_FIRST_COLUMN = 2;
-    private static final int INITIAL_SECOND_ROW = 0;
-    private static final int INITIAL_SECOND_COLUMN = 2;
+    public static final int INITIAL_FIRST_ROW = 1;
+    public static final int INITIAL_FIRST_COLUMN = 2;
+    public static final int INITIAL_SECOND_ROW = 0;
+    public static final int INITIAL_SECOND_COLUMN = 2;
     public static final int NONE = Color.WHITE;
     private static final int RED = Color.RED;
     private static final int BLUE = Color.BLUE;
     private static final int GREEN = Color.GREEN;
     private static final int YELLOW = Color.YELLOW;
-    private static final int[] COLORS = {RED, BLUE, GREEN, YELLOW};
+    public static final int[] COLORS = {RED, BLUE, GREEN, YELLOW};
 
     private int gridWidth = 35;
     private int gridHeight = 25;
 
-    private LinearLayout topGrid[][];
-    private LinearLayout topNextGrid[][];
-    private LinearLayout grid[][];
+    public LinearLayout topGrid[][];
+    public LinearLayout topNextGrid[][];
+    public LinearLayout grid[][];
 
-    private int firstRow = INITIAL_FIRST_ROW;
-    private int firstColumn = INITIAL_FIRST_COLUMN;
-    private int secondRow = INITIAL_SECOND_ROW;
-    private int secondColumn = INITIAL_SECOND_COLUMN;
-    private ChainTimerTask chainTimerTask = null;
+    public int firstRow = INITIAL_FIRST_ROW;
+    public int firstColumn = INITIAL_FIRST_COLUMN;
+    public int secondRow = INITIAL_SECOND_ROW;
+    public int secondColumn = INITIAL_SECOND_COLUMN;
+    public ChainTimerTask chainTimerTask = null;
     private SetGridTimerTask setGridTimerTask = null;
     private DropGridTimerTask dropGridTimerTask = null;
-    private Timer mTimer = null;
-    private Handler mHandler = new Handler();
+    public Timer mTimer = null;
+    public Handler mHandler = new Handler();
 
     private LinearLayout.LayoutParams rowLayoutParams =
             new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT, 1);
@@ -79,13 +85,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         renderField(fieldLayout, grid);
 
         Button ivt1Button = (Button) findViewById(R.id.button_left);
-        ivt1Button.setOnClickListener(this);
+        ivt1Button.setOnClickListener(new ButtonLeftClickListener(this));
         Button ivt2Button = (Button) findViewById(R.id.button_right);
-        ivt2Button.setOnClickListener(this);
+        ivt2Button.setOnClickListener(new ButtonRightClickListener(this));
         Button ivt3Button = (Button) findViewById(R.id.button_X);
-        ivt3Button.setOnClickListener(this);
+        ivt3Button.setOnClickListener(new ButtonXClickListener(this));
         Button ivt4Button = (Button) findViewById(R.id.button_Z);
-        ivt4Button.setOnClickListener(this);
+        ivt4Button.setOnClickListener(new ButtonZClickListener(this));
         Button ivt5Button = (Button) findViewById(R.id.button_down);
         ivt5Button.setOnClickListener(this);
     }
@@ -99,58 +105,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int firstColor = firstGridColor.getColor();
         int secondColor = secondGridColor.getColor();
 
-        int nextSecondColumn;
-        int nextSecondRow;
-
         TopState topState = new TopState(firstColumn, secondColumn, firstRow, secondRow, firstColor, secondColor, topGrid);
         KeyOperation keyOperation = new KeyOperation(topState);
 
         switch (v.getId()) {
-            case R.id.button_left:
-                if (keyOperation.isValidMove("left")) {
-                    topGrid[firstRow][firstColumn].setBackgroundColor(NONE);
-                    topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
-                    topGrid[firstRow][firstColumn - 1].setBackgroundColor(firstColor);
-                    topGrid[secondRow][secondColumn - 1].setBackgroundColor(secondColor);
-
-                    firstColumn -= 1;
-                    secondColumn -= 1;
-                }
-                break;
-            case R.id.button_right:
-                if (keyOperation.isValidMove("right")) {
-                    topGrid[firstRow][firstColumn].setBackgroundColor(NONE);
-                    topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
-                    topGrid[firstRow][firstColumn + 1].setBackgroundColor(firstColor);
-                    topGrid[secondRow][secondColumn + 1].setBackgroundColor(secondColor);
-
-                    firstColumn += 1;
-                    secondColumn += 1;
-                }
-                break;
-            case R.id.button_X:
-                nextSecondColumn = keyOperation.getRotatedSecondColumn("left");
-                nextSecondRow = keyOperation.getRotatedSecondRow("left");
-
-                topGrid[nextSecondRow][nextSecondColumn].setBackgroundColor(secondGridColor.getColor());
-                if (keyOperation.isValidRotation("left")) {
-                    topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
-                }
-                secondColumn = nextSecondColumn;
-                secondRow = nextSecondRow;
-                break;
-            case R.id.button_Z:
-                nextSecondColumn = keyOperation.getRotatedSecondColumn("right");
-                nextSecondRow = keyOperation.getRotatedSecondRow("right");
-
-                topGrid[nextSecondRow][nextSecondColumn].setBackgroundColor(secondGridColor.getColor());
-                if (keyOperation.isValidRotation("right")) {
-                    topGrid[secondRow][secondColumn].setBackgroundColor(NONE);
-                }
-
-                secondColumn = nextSecondColumn;
-                secondRow = nextSecondRow;
-                break;
             case R.id.button_down:
                 grid = keyOperation.getDropedGridStates(grid, topGrid);
                 ColorDrawable firstNextColor = (ColorDrawable) topNextGrid[0][0].getBackground();
@@ -292,7 +250,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static int convertToDPI(int size, DisplayMetrics metrics) {
         return (size * metrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
     }
-    class ChainTimerTask extends TimerTask {
+
+    public class ChainTimerTask extends TimerTask {
         private int chainCount;
 
         @Override
