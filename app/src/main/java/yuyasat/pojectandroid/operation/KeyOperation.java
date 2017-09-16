@@ -8,6 +8,7 @@ import java.util.HashMap;
 import static android.R.transition.move;
 import static yuyasat.pojectandroid.MainActivity.NONE;
 import static yuyasat.pojectandroid.MainActivity.ROW;
+import static yuyasat.pojectandroid.MainActivity.FIELD_NONE;
 
 import yuyasat.pojectandroid.MainActivity;
 import yuyasat.pojectandroid.entity.TopState;
@@ -102,14 +103,14 @@ public class KeyOperation {
         int r1 = ROW - 1;
         int dropedFirstRow = topState.secondRow == topState.firstRow + 1 ? r1 - 1 : r1;
 
-        while (r1 >= 0 && ((ColorDrawable) grid[r1][topState.firstColumn].getBackground()).getColor() != NONE) {
+        while (r1 >= 0 && ((ColorDrawable) grid[r1][topState.firstColumn].getBackground()).getColor() != FIELD_NONE) {
             dropedFirstRow = topState.secondRow == topState.firstRow + 1 ? r1 - 2 : r1 - 1;
             r1--;
         }
 
         int r2 = ROW - 1;
         int dropedSecondRow = topState.secondRow == topState.firstRow - 1 ? r2 - 1 : r2;
-        while (r2 >= 0 && ((ColorDrawable) grid[r2][topState.secondColumn].getBackground()).getColor() != NONE) {
+        while (r2 >= 0 && ((ColorDrawable) grid[r2][topState.secondColumn].getBackground()).getColor() != FIELD_NONE) {
             dropedSecondRow = topState.secondRow == topState.firstRow - 1 ? r2 - 2 : r2 - 1;
             r2--;
         }

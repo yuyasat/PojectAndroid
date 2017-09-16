@@ -26,10 +26,6 @@ import yuyasat.pojectandroid.operation.ButtonXClickListener;
 import yuyasat.pojectandroid.operation.ButtonZClickListener;
 import yuyasat.pojectandroid.operation.KeyOperation;
 
-/**
- * Created by yuyataki on 2017/05/28.
- */
-
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     public static final int COLUMN = 7;
     public static final int ROW = 11;
@@ -41,7 +37,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public static final int INITIAL_FIRST_COLUMN = 2;
     public static final int INITIAL_SECOND_ROW = 0;
     public static final int INITIAL_SECOND_COLUMN = 2;
-    public static final int NONE = Color.WHITE;
+    public static final int NONE = Color.TRANSPARENT;
+    public static final int FIELD_NONE = Color.WHITE;
     private static final int RED = Color.RED;
     private static final int BLUE = Color.BLUE;
     private static final int GREEN = Color.GREEN;
@@ -77,11 +74,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         LinearLayout topFieldLayout = (LinearLayout) findViewById(R.id.top_field);
         LinearLayout topNextFieldLayout = (LinearLayout) findViewById(R.id.top_next_field);
 
-        topGrid = initializeTopState(topGrid, COLUMN, TOP_ROW);
+        topGrid = initializeTopState(COLUMN, TOP_ROW);
         renderField(topFieldLayout, topGrid);
-        topNextGrid = initializeTopNextState(topNextGrid, TOP_NEXT_COLUMN, TOP_NEXT_ROW);
+        topNextGrid = initializeTopNextState(TOP_NEXT_COLUMN, TOP_NEXT_ROW);
         renderField(topNextFieldLayout, topNextGrid);
-        grid = initializeState(grid, COLUMN, ROW);
+        grid = initializeState(COLUMN, ROW);
         renderField(fieldLayout, grid);
 
         Button ivt1Button = (Button) findViewById(R.id.button_left);
@@ -154,8 +151,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    private LinearLayout[][] initializeState(LinearLayout[][] targetGrid, int column, int row) {
-        targetGrid = new LinearLayout[row][column];
+    private LinearLayout[][] initializeState(int column, int row) {
+        LinearLayout[][] targetGrid = new LinearLayout[row][column];
 
         DisplayMetrics metrics = getResources().getDisplayMetrics();
         LinearLayout.LayoutParams gridLayoutParams =
@@ -169,15 +166,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             for (int j = 0; j < column; j++) {
                 targetGrid[i][j] = new LinearLayout(this);
                 targetGrid[i][j].setLayoutParams(gridLayoutParams);
-                targetGrid[i][j].setBackgroundColor(Color.WHITE);
+                if (row == TOP_ROW) {
+                    targetGrid[i][j].setBackgroundColor(NONE);
+                } else {
+                    targetGrid[i][j].setBackgroundColor(FIELD_NONE);
+                }
                 gridLayoutParams.setMargins(margin, margin, margin, margin);
             }
         }
         return targetGrid;
     }
 
-    private LinearLayout[][] initializeTopNextState(LinearLayout[][] targetGrid, int column, int row) {
-        targetGrid = initializeState(targetGrid, column, row);
+    private LinearLayout[][] initializeTopNextState(int column, int row) {
+        LinearLayout[][] targetGrid = initializeState(column, row);
         Random rnd = new Random();
         targetGrid[0][0].setBackgroundColor(COLORS[rnd.nextInt(4)]);
         targetGrid[0][1].setBackgroundColor(COLORS[rnd.nextInt(4)]);
@@ -187,8 +188,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return targetGrid;
     }
 
-    private LinearLayout[][] initializeTopState(LinearLayout[][] targetGrid, int column, int row) {
-        targetGrid = initializeState(targetGrid, column, row);
+    private LinearLayout[][] initializeTopState(int column, int row) {
+        LinearLayout[][] targetGrid = initializeState(column, row);
         Random rnd = new Random();
         targetGrid[1][2].setBackgroundColor(COLORS[rnd.nextInt(4)]);
         targetGrid[0][2].setBackgroundColor(COLORS[rnd.nextInt(4)]);
@@ -214,11 +215,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private CountAndGrid getDeletedGridStates(LinearLayout[][] grids, int chainCount) {
-        int deletedColor = NONE;
+        int deletedColor = FIELD_NONE;
         for (int j = 0; j < grids.length; j++) {
             for (int i = 0; i < grids[j].length; i++) {
-                if (((ColorDrawable) grid[j][i].getBackground()).getColor() != NONE && Algorithm.countColor(j, i, grids) >= 4) {
-                    if (deletedColor == NONE || deletedColor == ((ColorDrawable) grid[j][i].getBackground()).getColor()) {
+                if (((ColorDrawable) grid[j][i].getBackground()).getColor() != FIELD_NONE && Algorithm.countColor(j, i, grids) >= 4) {
+                    if (deletedColor == FIELD_NONE || deletedColor == ((ColorDrawable) grid[j][i].getBackground()).getColor()) {
                         deletedColor = ((ColorDrawable) grid[j][i].getBackground()).getColor();
                         chainCount++;
                     }
@@ -226,8 +227,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             }
         }
-        CountAndGrid countAndGrid = new CountAndGrid(chainCount, grids);
-        return countAndGrid;
+        return new CountAndGrid(chainCount, grids);
     }
 
     private LinearLayout[][] dropGrids(LinearLayout[][] deletedGridStates, int chainCount) {
@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return (size * metrics.densityDpi) / DisplayMetrics.DENSITY_DEFAULT;
     }
 
-    public class ChainTimerTask extends TimerTask {
+    private class ChainTimerTask extends TimerTask {
         private int chainCount;
 
         @Override
@@ -262,12 +262,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
         }
-        public void setChainCount(int chainCount) {
+        private void setChainCount(int chainCount) {
             this.chainCount = chainCount;
         }
     }
 
-    class SetGridTimerTask extends TimerTask {
+    private class SetGridTimerTask extends TimerTask {
         private CountAndGrid countAndGrid;
         private int chainCount;
 
@@ -280,15 +280,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             mTimer = new Timer(true);
             mTimer.schedule(dropGridTimerTask, 200);
         }
-        public void setCountAndGrid(CountAndGrid countAndGrid) {
+        private void setCountAndGrid(CountAndGrid countAndGrid) {
             this.countAndGrid = countAndGrid;
         }
-        public void setChainCount(int chainCount) {
+        private void setChainCount(int chainCount) {
             this.chainCount = chainCount;
         }
     }
 
-    class DropGridTimerTask extends TimerTask {
+    private class DropGridTimerTask extends TimerTask {
         private CountAndGrid countAndGrid;
         private int chainCount;
 
@@ -300,10 +300,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
         }
-        public void setCountAndGrid(CountAndGrid countAndGrid) {
+        private void setCountAndGrid(CountAndGrid countAndGrid) {
             this.countAndGrid = countAndGrid;
         }
-        public void setChainCount(int chainCount) {
+        private void setChainCount(int chainCount) {
             this.chainCount = chainCount;
         }
     }
